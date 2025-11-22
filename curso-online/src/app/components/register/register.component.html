@@ -1,0 +1,108 @@
+<div class="register-container">
+  <div class="register-card">
+    <h2>Registro de Usuario</h2>
+     
+    
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        {{ successMessage() }}
+      </div>
+    }
+    
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="nombre">Nombre completo</label>
+        <input
+          type="text"
+          id="nombre"
+          formControlName="nombre"
+          placeholder="Ingresa tu nombre completo"
+          [class.error]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched"
+        />
+        @if (getErrorMessage('nombre')) {
+          <span class="error-message">{{ getErrorMessage('nombre') }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          placeholder="correo@ejemplo.com"
+          [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+        />
+        @if (getErrorMessage('email')) {
+          <span class="error-message">{{ getErrorMessage('email') }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          placeholder="Mínimo 4 caracteres"
+          [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+        />
+        @if (getErrorMessage('password')) {
+          <span class="error-message">{{ getErrorMessage('password') }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmar contraseña</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          placeholder="Repite tu contraseña"
+          [class.error]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
+        />
+        @if (getErrorMessage('confirmPassword')) {
+          <span class="error-message">{{ getErrorMessage('confirmPassword') }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="role">Rol</label>
+        <select
+          id="role"
+          formControlName="role"
+          [class.error]="registerForm.get('role')?.invalid && registerForm.get('role')?.touched"
+        >
+          @for (role of roles; track role.value) {
+            <option [value]="role.value">{{ role.label }}</option>
+          }
+        </select>
+        @if (getErrorMessage('role')) {
+          <span class="error-message">{{ getErrorMessage('role') }}</span>
+        }
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn-submit"
+        [disabled]="isLoading()"
+      >
+        @if (isLoading()) {
+          <span>Registrando...</span>
+        } @else {
+          <span>Registrarse</span>
+        }
+      </button>
+    </form>
+
+    <div class="login-link">
+      ¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión aquí</a>
+    </div>
+  </div>
+</div>

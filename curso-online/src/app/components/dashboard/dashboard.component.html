@@ -1,0 +1,41 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>Dashboard - Curso Online</h1>
+    <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
+  </header>
+
+  <div class="dashboard-content">
+    <div class="welcome-card">
+      <h2>¡Bienvenido!</h2>
+      <p>Has iniciado sesión correctamente.</p>
+      <p>Aquí podrás ver tus cursos, tareas y más contenido próximamente.</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="info-card" routerLink="/usuarios">
+        <h3>👥 Gestión de Usuarios</h3>
+        <p>Crear, editar y administrar usuarios</p>
+      </div>
+
+      <div class="info-card" routerLink="/cursos">
+        <h3>📚 Gestión de Cursos</h3>
+        <p>Crear, editar y administrar cursos</p>
+      </div>
+
+      <div class="info-card" routerLink="/cursos-disponibles">
+        <h3>🎓 Cursos Disponibles</h3>
+        <p>Explora e inscríbete en cursos</p>
+      </div>
+
+      <div class="info-card" routerLink="/mis-cursos">
+        <h3>📖 Mis Cursos</h3>
+        <p>Ver tus cursos inscritos</p>
+      </div>
+
+      <div class="info-card">
+        <h3>💬 Comunidad</h3>
+        <p>Interactúa con otros estudiantes</p>
+      </div>
+    </div>
+  </div>
+</div>

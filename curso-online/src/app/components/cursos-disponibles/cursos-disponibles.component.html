@@ -1,0 +1,70 @@
+<div class="cursos-container">
+  <div class="header">
+    <h1>Cursos Disponibles</h1>
+    <div class="header-actions">
+      <button class="btn-secondary" routerLink="/mis-cursos">
+        📚 Mis Cursos
+      </button>
+      <button class="btn-secondary" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading">
+      <p>Cargando cursos disponibles...</p>
+    </div>
+  } @else {
+    @if (cursos().length === 0) {
+      <div class="empty-state">
+        <h2>No hay cursos disponibles</h2>
+        <p>No hay cursos activos en este momento</p>
+        <button class="btn-primary" routerLink="/dashboard">
+          Volver al Dashboard
+        </button>
+      </div>
+    } @else {
+      <div class="cursos-grid">
+        @for (curso of cursos(); track curso.id) {
+          <div class="curso-card">
+            <div class="curso-header">
+              <h3>{{ curso.titulo }}</h3>
+              <span class="estado-badge estado-activo">Activo</span>
+            </div>
+            
+            <p class="curso-descripcion">{{ curso.descripcion }}</p>
+            
+            <div class="curso-footer">
+              @if (estaInscrito(curso.id!)) {
+                <button class="btn-inscrito" disabled>
+                  ✓ Ya inscrito
+                </button>
+              } @else if (estaProcesando(curso.id!)) {
+                <button class="btn-inscribiendo" disabled>
+                  Inscribiendo...
+                </button>
+              } @else {
+                <button class="btn-inscribir" (click)="inscribirse(curso.id!)">
+                  ➕ Inscribirse
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,79 @@
+<div class="cursos-container">
+  <div class="header">
+    <h1>Mis Cursos</h1>
+    <div class="header-actions">
+      <button class="btn-primary" routerLink="/cursos-disponibles">
+        ➕ Explorar Cursos
+      </button>
+      <button class="btn-secondary" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading">
+      <p>Cargando tus cursos...</p>
+    </div>
+  } @else {
+    @if (misCursos().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h2>No estás inscrito en ningún curso</h2>
+        <p>Explora los cursos disponibles y comienza tu aprendizaje</p>
+        <button class="btn-primary" routerLink="/cursos-disponibles">
+          Explorar Cursos
+        </button>
+      </div>
+    } @else {
+      <div class="cursos-grid">
+        @for (inscripcion of misCursos(); track trackByInscripcion($index, inscripcion)) {
+          <div class="curso-card">
+            <div class="curso-header">
+              <h3>{{ inscripcion.curso.titulo }}</h3>
+              <span [class]="'estado-badge ' + getEstadoClass(inscripcion.curso.estado)">
+                {{ getEstadoLabel(inscripcion.curso.estado) }}
+              </span>
+            </div>
+            
+            <p class="curso-descripcion">{{ inscripcion.curso.descripcion }}</p>
+            
+            <div class="curso-info">
+              <div class="info-item">
+                <span class="info-label">Estudiante:</span>
+                <span class="info-value">{{ inscripcion.usuario.nombre }}</span>
+              </div>
+            </div>
+
+            <div class="curso-actions">
+              <button class="btn-acceder" (click)="accederAlCurso(inscripcion.curso.id)">
+                📖 Acceder al Curso
+              </button>
+              @if (estaCancelando(inscripcion.id || 0)) {
+                <button class="btn-cancelando" disabled>
+                  Cancelando...
+                </button>
+              } @else {
+                <button class="btn-cancelar" (click)="cancelarInscripcion(inscripcion.id || 0)">
+                  ❌ Cancelar Inscripción
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

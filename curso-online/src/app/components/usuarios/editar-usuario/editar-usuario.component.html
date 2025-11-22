@@ -1,0 +1,115 @@
+<div class="container-editar-usuario">
+  <div class="header">
+    <button class="btn-back" (click)="cancelar()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h2>{{ modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="cargando" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!cargando" class="form-container">
+    <form [formGroup]="usuarioForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="nombre">Nombre Completo *</label>
+        <input
+          type="text"
+          id="nombre"
+          class="form-control"
+          formControlName="nombre"
+          [class.is-invalid]="esInvalido('nombre')"
+          placeholder="Ingrese el nombre completo">
+        <div class="invalid-feedback" *ngIf="esInvalido('nombre')">
+          {{ obtenerMensajeError('nombre') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          formControlName="email"
+          [class.is-invalid]="esInvalido('email')"
+          placeholder="ejemplo@correo.com">
+        <div class="invalid-feedback" *ngIf="esInvalido('email')">
+          {{ obtenerMensajeError('email') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">
+          Contraseña {{ modoEdicion ? '(dejar en blanco para no cambiar)' : '*' }}
+        </label>
+        <div class="password-input">
+          <input
+            [type]="mostrarPassword ? 'text' : 'password'"
+            id="password"
+            class="form-control"
+            formControlName="password"
+            [class.is-invalid]="esInvalido('password')"
+            placeholder="Ingrese la contraseña">
+          <button type="button" class="btn-toggle-password" (click)="toggleMostrarPassword()">
+            <i [class]="mostrarPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback" *ngIf="esInvalido('password')">
+          {{ obtenerMensajeError('password') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="rol">Rol *</label>
+        <select
+          id="rol"
+          class="form-control"
+          formControlName="rol"
+          [class.is-invalid]="esInvalido('rol')">
+          <option value="ESTUDIANTE">Estudiante</option>
+          <option value="DOCENTE">Docente</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+        <div class="invalid-feedback" *ngIf="esInvalido('rol')">
+          {{ obtenerMensajeError('rol') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="telefono">Teléfono</label>
+        <input
+          type="tel"
+          id="telefono"
+          class="form-control"
+          formControlName="telefono"
+          [class.is-invalid]="esInvalido('telefono')"
+          placeholder="Ej: 912345678">
+        <div class="invalid-feedback" *ngIf="esInvalido('telefono')">
+          {{ obtenerMensajeError('telefono') }}
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelar()" [disabled]="guardando">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando || usuarioForm.invalid">
+          <span *ngIf="!guardando">
+            <i class="fas fa-save"></i> {{ modoEdicion ? 'Actualizar' : 'Crear' }}
+          </span>
+          <span *ngIf="guardando">
+            <span class="spinner-border spinner-border-sm"></span> Guardando...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

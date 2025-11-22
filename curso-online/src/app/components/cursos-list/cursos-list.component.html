@@ -1,0 +1,65 @@
+<div class="cursos-container">
+  <div class="header">
+    <h1>Gestión de Cursos</h1>
+    <div class="header-actions">
+      <button class="btn-primary" routerLink="/cursos/crear">
+        ➕ Nuevo Curso
+      </button>
+      <button class="btn-secondary" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading">
+      <p>Cargando cursos...</p>
+    </div>
+  } @else {
+    @if (cursos().length === 0) {
+      <div class="empty-state">
+        <h2>No hay cursos disponibles</h2>
+        <p>Comienza creando tu primer curso</p>
+        <button class="btn-primary" routerLink="/cursos/crear">
+          Crear Curso
+        </button>
+      </div>
+    } @else {
+      <div class="cursos-grid">
+        @for (curso of cursos(); track curso.id) {
+          <div class="curso-card">
+            <div class="curso-header">
+              <h3>{{ curso.titulo }}</h3>
+              <span [class]="'estado-badge ' + getEstadoClass(curso.estado)">
+                {{ getEstadoLabel(curso.estado) }}
+              </span>
+            </div>
+            
+            <p class="curso-descripcion">{{ curso.descripcion }}</p>
+            
+            <div class="curso-actions">
+              <button class="btn-edit" (click)="editarCurso(curso.id!)">
+                ✏️ Editar
+              </button>
+              <button class="btn-delete" (click)="eliminarCurso(curso.id!)">
+                🗑️ Eliminar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
