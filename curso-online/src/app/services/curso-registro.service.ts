@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth.service';
+//import { AuthService } from './auth.service';
 import { Curso } from './curso.service';
 
 export interface Usuario {
@@ -28,45 +28,45 @@ export class CursoRegistroService {
   private apiUrl = 'http://localhost:8080/cursoregistros';
 
   constructor(
-    private http: HttpClient,
-    private authService: AuthService
+      private http: HttpClient,
+  //  private authService: AuthService
   ) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-  }
+  //private getHeaders(): HttpHeaders {
+  //  const token = this.authService.getToken();
+  //  return new HttpHeaders({
+  //    'Content-Type': 'application/json',
+  //    'Authorization': `Bearer ${token}`
+  //  });
+  //}
 
   // Inscribirse a un curso
   inscribirseACurso(inscripcion: InscripcionRequest): Observable<CursoRegistro> {
-    return this.http.post<CursoRegistro>(this.apiUrl, inscripcion, { headers: this.getHeaders() });
+    return this.http.post<CursoRegistro>(this.apiUrl, inscripcion,);
   }
 
   // Obtener una inscripción por ID
   obtenerInscripcion(id: number): Observable<CursoRegistro> {
-    return this.http.get<CursoRegistro>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.get<CursoRegistro>(`${this.apiUrl}/${id}`,);
   }
 
   // Listar todas las inscripciones
   listarInscripciones(): Observable<CursoRegistro[]> {
-    return this.http.get<CursoRegistro[]>(this.apiUrl, { headers: this.getHeaders() });
+    return this.http.get<CursoRegistro[]>(this.apiUrl,);
   }
 
   // Obtener cursos de un usuario específico
   obtenerCursosDeUsuario(usuarioId: number): Observable<CursoRegistro[]> {
-    return this.http.get<CursoRegistro[]>(`${this.apiUrl}/usuario/${usuarioId}`, { headers: this.getHeaders() });
+    return this.http.get<CursoRegistro[]>(`${this.apiUrl}/usuario/${usuarioId}`,);
   }
 
   // Cancelar inscripción (eliminar)
   cancelarInscripcion(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`,);
   }
 
   // Verificar si un usuario está inscrito en un curso
   estaInscrito(usuarioId: number, cursoId: number): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/verificar/${usuarioId}/${cursoId}`, { headers: this.getHeaders() });
+    return this.http.get<boolean>(`${this.apiUrl}/verificar/${usuarioId}/${cursoId}`);
   }
 }

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth.service';
+
+//import { AuthService } from './auth.service';
 
 export enum EstadoCurso {
   ACTIVO = 'ACTIVO',
@@ -25,36 +26,36 @@ export class CursoService {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    //private authService: AuthService
   ) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-  }
+  //*private getHeaders(): HttpHeaders {
+  //  const token = this.authService.getToken();
+  //  return new HttpHeaders({
+  //    'Content-Type': 'application/json',
+  //    'Authorization': `Bearer ${token}`
+  //  });
+  //}
 
-  crearCurso(curso: Curso): Observable<Curso> {
-    return this.http.post<Curso>(`${this.apiUrl}`, curso, { headers: this.getHeaders() });
+
+crearCurso(curso: Curso): Observable<Curso> {
+    return this.http.post<Curso>(this.apiUrl, curso);
   }
 
   obtenerCurso(id: number): Observable<Curso> {
-    return this.http.get<Curso>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.get<Curso>(`${this.apiUrl}/${id}`);
   }
 
   listarCursos(): Observable<Curso[]> {
-    return this.http.get<Curso[]>(`${this.apiUrl}`, { headers: this.getHeaders() });
+    return this.http.get<Curso[]>(this.apiUrl);
   }
 
   actualizarCurso(id: number, curso: Curso): Observable<Curso> {
-    return this.http.put<Curso>(`${this.apiUrl}/${id}`, curso, { headers: this.getHeaders() });
+    return this.http.put<Curso>(`${this.apiUrl}/${id}`, curso);
   }
 
   eliminarCurso(id: number): Observable<void> {
-    console.log('Eliminando curso - URL completa:', `${this.apiUrl}/${id}`);
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   inscribirCurso(cursoId: number, usuarioId: number): Observable<any> {

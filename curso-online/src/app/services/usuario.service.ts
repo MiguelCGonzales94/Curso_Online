@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth.service';
+//import { AuthService } from './auth.service';
 
 export interface Usuario {
   id?: number;
@@ -22,25 +22,25 @@ export class UsuarioService {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    //private authService: AuthService
   ) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-  }
+ // private getHeaders(): HttpHeaders {
+ //   const token = this.authService.getToken();
+ //   return new HttpHeaders({
+ //     'Content-Type': 'application/json',
+ //     'Authorization': `Bearer ${token}`
+ //   });
+ // }
 
   // Obtener todos los usuarios
   listarUsuarios(): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(this.apiUrl, { headers: this.getHeaders() });
+    return this.http.get<Usuario[]>(this.apiUrl);
   }
 
   // Obtener un usuario por ID
   obtenerUsuario(id: number): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.get<Usuario>(`${this.apiUrl}/${id}`);
   }
 
   // Crear un nuevo usuario (usando el endpoint de registro)
@@ -51,7 +51,7 @@ export class UsuarioService {
       'DOCENTE': 'ROLE_DOCENTE',
       'ADMIN': 'ROLE_ADMIN'
     };
-    
+
     const registerData = {
       email: usuario.email,
       password: usuario.password,
@@ -64,26 +64,26 @@ export class UsuarioService {
 
   // Actualizar un usuario existente
   actualizarUsuario(id: number, usuario: Usuario): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.apiUrl}/${id}`, usuario, { headers: this.getHeaders() });
+    return this.http.put<Usuario>(`${this.apiUrl}/${id}`, usuario);
   }
 
   // Eliminar un usuario
   eliminarUsuario(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   // Obtener el perfil del usuario actual
   obtenerPerfil(): Observable<Usuario> {
-    return this.http.get<Usuario>(`${this.apiUrl}/perfil`, { headers: this.getHeaders() });
+    return this.http.get<Usuario>(`${this.apiUrl}/perfil`);
   }
 
   // Actualizar el perfil del usuario actual
   actualizarPerfil(usuario: Usuario): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.apiUrl}/perfil`, usuario, { headers: this.getHeaders() });
+    return this.http.put<Usuario>(`${this.apiUrl}/perfil`, usuario);
   }
 
   // Buscar usuarios por nombre o email
   buscarUsuarios(termino: string): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(`${this.apiUrl}/buscar?q=${termino}`, { headers: this.getHeaders() });
+    return this.http.get<Usuario[]>(`${this.apiUrl}/buscar?q=${termino}`);
   }
 }
