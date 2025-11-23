@@ -10,19 +10,83 @@ import { CursoDetalleComponent } from './components/curso-detalle/curso-detalle.
 import { ListaUsuariosComponent } from './components/usuarios/lista-usuarios/lista-usuarios.component';
 import { EditarUsuarioComponent } from './components/usuarios/editar-usuario/editar-usuario.component';
 
+//Agregamos esta dos import
+import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
+
+
+//Modificaciomos para agregar las rutas de acuerod a los roles
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'cursos', component: CursosListComponent },
-  { path: 'cursos/crear', component: CursoFormComponent },
-  { path: 'cursos/editar/:id', component: CursoFormComponent },
-  { path: 'curso-detalle/:id', component: CursoDetalleComponent },
-  { path: 'cursos-disponibles', component: CursosDisponiblesComponent },
-  { path: 'mis-cursos', component: MisCursosComponent },
-  { path: 'usuarios', component: ListaUsuariosComponent },
-  { path: 'usuarios/nuevo', component: EditarUsuarioComponent },
-  { path: 'usuarios/editar/:id', component: EditarUsuarioComponent },
+
+  {
+    path: 'dashboard',
+    component: DashboardComponent,
+    canActivate: [authGuard]
+  },
+
+  // RUTAS SOLO PARA ADMIN
+  {
+    path: 'usuarios',
+    component: ListaUsuariosComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN'] }
+  },
+  {
+    path: 'usuarios/nuevo',
+    component: EditarUsuarioComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN'] }
+  },
+  {
+    path: 'usuarios/editar/:id',
+    component: EditarUsuarioComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN'] }
+  },
+
+  // RUTAS PARA ADMIN Y DOCENTE
+  {
+    path: 'cursos',
+    component: CursosListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_DOCENTE'] }
+  },
+  {
+    path: 'cursos/crear',
+    component: CursoFormComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_DOCENTE'] }
+  },
+  {
+    path: 'cursos/editar/:id',
+    component: CursoFormComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN', 'ROLE_DOCENTE'] }
+  },
+
+  // RUTAS SOLO PARA ESTUDIANTES
+  {
+    path: 'cursos-disponibles',
+    component: CursosDisponiblesComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ESTUDIANTE'] }
+  },
+
+  // RUTAS PARA ESTUDIANTES Y DOCENTES
+  {
+    path: 'mis-cursos',
+    component: MisCursosComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ESTUDIANTE', 'ROLE_DOCENTE'] }
+  },
+  {
+    path: 'curso-detalle/:id',
+    component: CursoDetalleComponent,
+    canActivate: [authGuard]
+  },
+
   { path: '**', redirectTo: '/dashboard' }
 ];

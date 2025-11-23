@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
 export interface RegisterRequest {
   email: string;
@@ -21,18 +22,7 @@ export interface AuthResponse {
   userId?: number;
   userName?: string;
   userEmail?: string;
-}
-
-export interface CursoRegistroRequest {
-  cursoId: number;
-  usuarioId: number;
-  // Agregar campos adicionales que el backend pueda necesitar
-  fechaRegistro?: string;
-}
-
-export interface CursoRegistroResponse {
-  message?: string;
-  error?: string;
+  userRole?: string;
 }
 
 @Injectable({
@@ -40,25 +30,34 @@ export interface CursoRegistroResponse {
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/auth';
-  private cursoRegistroUrl = 'http://localhost:8080/cursoregistros';
   private tokenKey = 'auth_token';
   private userIdKey = 'user_id';
   private userNameKey = 'user_name';
   private userEmailKey = 'user_email';
-  
+  private userRoleKey = 'user_role';
+
   isAuthenticated = signal<boolean>(false);
   currentUserId = signal<number | null>(null);
   currentUserName = signal<string | null>(null);
+  currentUserRole = signal<string | null>(null);
 
-  constructor(private http: HttpClient) {
-    // Inicializar después de que el constructor se complete
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
     this.initializeAuth();
   }
 
   private initializeAuth(): void {
-    this.isAuthenticated.set(this.hasToken());
-    this.currentUserId.set(this.getUserId());
-    this.currentUserName.set(this.getUserName());
+    const hasToken = this.hasToken();
+    const userId = this.getUserId();
+    const userName = this.getUserName();
+    const userRole = this.getUserRole();
+
+    this.isAuthenticated.set(hasToken);
+    this.currentUserId.set(userId);
+    this.currentUserName.set(userName);
+    this.currentUserRole.set(userRole);
   }
 
   register(userData: RegisterRequest): Observable<AuthResponse> {
@@ -70,29 +69,64 @@ export class AuthService {
       .pipe(
         tap(response => {
           if (response.token) {
-            this.setToken(response.token);
-            this.isAuthenticated.set(true);
-            
-            // Extraer email del token
-            const email = this.extractEmailFromToken(response.token);
-            
-            // Obtener userId del backend usando el email
-            if (email) {
-              this.getUserIdByEmailSync(email);
-            }
-            
-            if (response.userName) {
-              this.setUserName(response.userName);
-              this.currentUserName.set(response.userName);
-            }
-            if (response.userEmail) {
-              this.setUserEmail(response.userEmail);
-            } else if (email) {
-              this.setUserEmail(email);
-            }
+            this.handleLoginSuccess(response);
           }
         })
       );
+  }
+
+  private handleLoginSuccess(response: AuthResponse): void {
+    if (response.token) {
+      this.setToken(response.token);
+      this.isAuthenticated.set(true);
+
+      const tokenPayload = this.extractPayloadFromToken(response.token);
+
+      if (response.userId) {
+        this.setUserId(response.userId);
+        this.currentUserId.set(response.userId);
+      } else if (tokenPayload?.userId) {
+        this.setUserId(tokenPayload.userId);
+        this.currentUserId.set(tokenPayload.userId);
+      }
+
+      if (response.userName) {
+        this.setUserName(response.userName);
+        this.currentUserName.set(response.userName);
+      }
+
+      if (response.userEmail) {
+        this.setUserEmail(response.userEmail);
+      } else {
+        const email = this.extractEmailFromToken(response.token);
+        if (email) this.setUserEmail(email);
+      }
+
+      if (response.userRole) {
+        this.setUserRole(response.userRole);
+        this.currentUserRole.set(response.userRole);
+      } else if (tokenPayload?.role) {
+        this.setUserRole(tokenPayload.role);
+        this.currentUserRole.set(tokenPayload.role);
+      } else {
+        this.fetchUserRoleFromBackend();
+      }
+    }
+  }
+
+  private fetchUserRoleFromBackend(): void {
+    const userId = this.getUserId();
+    if (userId) {
+      this.http.get<any>(`http://localhost:8080/usuarios/${userId}`).subscribe({
+        next: (user) => {
+          if (user && user.rol) {
+            this.setUserRole(user.rol);
+            this.currentUserRole.set(user.rol);
+          }
+        },
+        error: (error) => console.error('Error al obtener rol:', error)
+      });
+    }
   }
 
   logout(): void {
@@ -100,9 +134,14 @@ export class AuthService {
     localStorage.removeItem(this.userIdKey);
     localStorage.removeItem(this.userNameKey);
     localStorage.removeItem(this.userEmailKey);
+    localStorage.removeItem(this.userRoleKey);
+
     this.isAuthenticated.set(false);
     this.currentUserId.set(null);
     this.currentUserName.set(null);
+    this.currentUserRole.set(null);
+
+    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
@@ -122,6 +161,27 @@ export class AuthService {
     return localStorage.getItem(this.userEmailKey);
   }
 
+  getUserRole(): string | null {
+    return localStorage.getItem(this.userRoleKey);
+  }
+
+  hasRole(roles: string[]): boolean {
+    const userRole = this.getUserRole();
+    return userRole ? roles.includes(userRole) : false;
+  }
+
+  isEstudiante(): boolean {
+    return this.getUserRole() === 'ROLE_ESTUDIANTE';
+  }
+
+  isDocente(): boolean {
+    return this.getUserRole() === 'ROLE_DOCENTE';
+  }
+
+  isAdmin(): boolean {
+    return this.getUserRole() === 'ROLE_ADMIN';
+  }
+
   private setToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
   }
@@ -138,96 +198,35 @@ export class AuthService {
     localStorage.setItem(this.userEmailKey, email);
   }
 
+  private setUserRole(role: string): void {
+    localStorage.setItem(this.userRoleKey, role);
+  }
+
   private hasToken(): boolean {
     return !!this.getToken();
   }
 
-  // Método para extraer userId del token JWT
-  private extractUserIdFromToken(token: string): number | null {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      
-      // El backend puede usar diferentes nombres: userId, id, sub (subject), user_id, etc.
-      // El campo 'sub' normalmente contiene el email del usuario
-      const userId = payload.userId || payload.id || payload.user_id;
-      
-      if (userId) {
-        return Number(userId);
-      }
-      
-      // Si no hay userId en el token, el sub contiene el email
-      // Necesitarás hacer una petición adicional para obtener el userId por email
-      return null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  // Método para extraer email del token JWT
-  private extractEmailFromToken(token: string): string | null {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.sub || null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  // Método para obtener userId por email
-  private getUserIdByEmailSync(email: string): void {
-    // Usar directamente el método que funciona
-    this.http.get<any[]>(`http://localhost:8080/usuarios`).subscribe({
-      next: (usuarios) => {
-        const usuario = usuarios.find(u => u.email === email);
-        if (usuario && usuario.id) {
-          this.setUserId(usuario.id);
-          this.currentUserId.set(usuario.id);
-          
-          if (usuario.nombre) {
-            this.setUserName(usuario.nombre);
-            this.currentUserName.set(usuario.nombre);
-          }
-        }
-      },
-      error: (error) => {
-        console.error('Error al obtener usuario:', error);
-      }
-    });
-  }
-
-  // Método público para verificar autenticación
   checkAuthentication(): boolean {
     const hasToken = this.hasToken();
     const hasUserId = !!this.getUserId();
     return hasToken && hasUserId;
   }
 
-  inscribirCurso(cursoId: number, usuarioId: number): Observable<any> {
-    // Validar que los valores sean números válidos
-    if (!cursoId || isNaN(cursoId)) {
-      console.error('cursoId inválido:', cursoId);
-      throw new Error('ID de curso inválido');
+  private extractPayloadFromToken(token: string): any {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload;
+    } catch (error) {
+      return null;
     }
-    
-    if (!usuarioId || isNaN(usuarioId)) {
-      console.error('usuarioId inválido:', usuarioId);
-      throw new Error('ID de usuario inválido');
+  }
+
+  private extractEmailFromToken(token: string): string | null {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub || payload.email || null;
+    } catch (error) {
+      return null;
     }
-
-    // Enviar objetos con la estructura que el backend espera (objetos completos)
-    const body = {
-      curso: {
-        id: Number(cursoId)
-      },
-      usuario: {
-        id: Number(usuarioId)
-      }
-    };
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.post(this.cursoRegistroUrl, body, { headers });
   }
 }
