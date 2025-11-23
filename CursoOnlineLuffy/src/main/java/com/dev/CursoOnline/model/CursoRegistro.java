@@ -1,6 +1,5 @@
 package com.dev.CursoOnline.model;
 
-
 import jakarta.persistence.*;
 
 @Entity
@@ -19,8 +18,15 @@ public class CursoRegistro {
     @JoinColumn(name = "curso_id", nullable = false)
     private Curso curso;
 
+    // Getters y Setters
 
-    // getters y setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Usuario getUsuario() {
         return usuario;

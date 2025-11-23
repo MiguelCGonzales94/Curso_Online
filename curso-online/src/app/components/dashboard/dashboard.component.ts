@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -18,7 +18,6 @@ interface DashboardCard {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-
 export class DashboardComponent implements OnInit {
   userName: string | null = null;
   userRole: string | null = null;
@@ -51,7 +50,7 @@ export class DashboardComponent implements OnInit {
       description: 'Ver tus cursos inscritos',
       icon: 'fas fa-book-reader',
       route: '/mis-cursos',
-      roles: ['ROLE_ESTUDIANTE', 'ROLE_DOCENTE']
+      roles: ['ROLE_ESTUDIANTE']
     }
   ];
 
@@ -63,15 +62,27 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.userName = this.authService.getUserName();
     this.userRole = this.authService.getUserRole();
+
+    console.log('Dashboard cargado para:', {
+      userName: this.userName,
+      userRole: this.userRole
+    });
+
     this.filterCardsByRole();
   }
 
   private filterCardsByRole(): void {
     const userRole = this.authService.getUserRole();
+
     if (userRole) {
       this.availableCards = this.allCards.filter(card =>
         card.roles.includes(userRole)
       );
+
+      console.log('Cards disponibles:', this.availableCards.length);
+      console.log('Cards:', this.availableCards.map(c => c.title));
+    } else {
+      console.error('No se encontró rol del usuario');
     }
   }
 

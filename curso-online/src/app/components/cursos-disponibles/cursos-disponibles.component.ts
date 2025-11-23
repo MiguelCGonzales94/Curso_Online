@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { CursoService, Curso, EstadoCurso } from '../../services/curso.service';
+import { CursoRegistroService } from '../../services/curso-registro.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -21,12 +22,12 @@ export class CursosDisponiblesComponent implements OnInit {
 
   constructor(
     private cursoService: CursoService,
+    private cursoRegistroService: CursoRegistroService,
     private authService: AuthService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    // Dar tiempo para que el userId se cargue si viene de login
     setTimeout(() => {
       if (!this.authService.checkAuthentication()) {
         this.errorMessage.set('Debes iniciar sesión para ver los cursos');
@@ -35,9 +36,9 @@ export class CursosDisponiblesComponent implements OnInit {
         }, 2000);
         return;
       }
-      
+
       this.cargarCursosDisponibles();
-    }, 500); // Esperar 500ms para que se cargue el userId
+    }, 500);
   }
 
   cargarCursosDisponibles(): void {
@@ -46,7 +47,6 @@ export class CursosDisponiblesComponent implements OnInit {
 
     this.cursoService.listarCursos().subscribe({
       next: (data) => {
-        // Filtrar solo cursos activos
         const cursosActivos = data.filter(curso => curso.estado === EstadoCurso.ACTIVO);
         this.cursos.set(cursosActivos);
         this.isLoading.set(false);
@@ -64,7 +64,6 @@ export class CursosDisponiblesComponent implements OnInit {
       return;
     }
 
-    // Verificar autenticación antes de inscribirse
     if (!this.authService.checkAuthentication()) {
       this.errorMessage.set('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
       setTimeout(() => {
@@ -74,7 +73,7 @@ export class CursosDisponiblesComponent implements OnInit {
     }
 
     const usuarioId = this.authService.currentUserId();
-    
+
     if (!usuarioId) {
       this.errorMessage.set('Error al obtener tu información. Por favor, inicia sesión nuevamente.');
       setTimeout(() => {
@@ -87,20 +86,19 @@ export class CursosDisponiblesComponent implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    this.authService.inscribirCurso(cursoId, usuarioId).subscribe({
-      next: (response) => {
+    this.cursoRegistroService.inscribirseACurso({ usuarioId, cursoId }).subscribe({
+      next: (response: any) => {
         this.procesandoInscripcion.set(null);
         this.successMessage.set('¡Te has inscrito exitosamente al curso!');
         this.cursosInscritos().add(cursoId);
-        
+
         setTimeout(() => {
           this.successMessage.set('');
         }, 3000);
       },
-      error: (error) => {
+      error: (error: any) => {
         this.procesandoInscripcion.set(null);
-        
-        // Manejar diferentes tipos de errores
+
         if (error.status === 409) {
           this.errorMessage.set('Ya estás inscrito en este curso');
         } else if (error.status === 403 || error.status === 401) {
@@ -114,8 +112,7 @@ export class CursosDisponiblesComponent implements OnInit {
         } else {
           this.errorMessage.set('Error al inscribirse al curso. Intenta de nuevo.');
         }
-        
-        // Limpiar mensaje después de 5 segundos
+
         setTimeout(() => {
           this.errorMessage.set('');
         }, 5000);
