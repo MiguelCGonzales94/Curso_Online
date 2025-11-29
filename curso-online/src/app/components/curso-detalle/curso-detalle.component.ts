@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 interface Leccion {
   id: number;
@@ -29,107 +29,119 @@ interface CursoDetalle {
   styleUrls: ['./curso-detalle.component.css']
 })
 export class CursoDetalleComponent implements OnInit {
+
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private http = inject(HttpClient);
+
+  private apiUrl = 'http://localhost:8080/cursos';
+
   curso = signal<CursoDetalle | null>(null);
   leccionActual = signal<Leccion | null>(null);
   progreso = signal<number>(0);
+  loading = signal<boolean>(true);
+  error = signal<string>('');
 
-  private cursosEjemplo: CursoDetalle[] = [
-    {
-      id: 7,
-      titulo: 'Introducción a Angular',
-      descripcion: 'Aprende los fundamentos de Angular',
-      instructor: 'Juan Pérez',
-      duracionTotal: '10 horas',
-      progreso: 30,
-      lecciones: [
-        { id: 1, titulo: 'Introducción a Angular', duracion: '15 min', completada: true, contenido: 'Angular es un framework de desarrollo web...' },
-        { id: 2, titulo: 'Componentes', duracion: '25 min', completada: true, contenido: 'Los componentes son la base de Angular...' },
-        { id: 3, titulo: 'Directivas', duracion: '20 min', completada: false, contenido: 'Las directivas permiten manipular el DOM...' },
-        { id: 4, titulo: 'Servicios', duracion: '30 min', completada: false, contenido: 'Los servicios son clases que comparten lógica...' },
-        { id: 5, titulo: 'Routing', duracion: '25 min', completada: false, contenido: 'El routing permite navegar entre páginas...' }
-      ]
-    },
-    {
-      id: 1,
-      titulo: 'Curso de ejemplo',
-      descripcion: 'Este es un curso de ejemplo',
-      instructor: 'Instructor Demo',
-      duracionTotal: '5 horas',
-      progreso: 0,
-      lecciones: [
-        { id: 1, titulo: 'Introducción', duracion: '10 min', completada: false, contenido: 'Bienvenido al curso...' },
-        { id: 2, titulo: 'Conceptos básicos', duracion: '20 min', completada: false, contenido: 'En esta lección veremos...' }
-      ]
-    }
-  ];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private authService: AuthService
-  ) {}
-
-  ngOnInit(): void {
-    const cursoId = Number(this.route.snapshot.paramMap.get('id'));
-    console.log('ID del curso:', cursoId);
-    this.cargarCurso(cursoId);
-  }
-
-  cargarCurso(cursoId: number): void {
-    const cursoEncontrado = this.cursosEjemplo.find(c => c.id === cursoId);
-    
-    if (cursoEncontrado) {
-      this.curso.set(cursoEncontrado);
-      this.progreso.set(cursoEncontrado.progreso);
-      if (cursoEncontrado.lecciones.length > 0) {
-        this.seleccionarLeccion(cursoEncontrado.lecciones[0]);
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.cargarCursoDesdeBackend(+id);
       }
-    } else {
-      console.error('Curso no encontrado');
-    }
+    });
   }
 
-  seleccionarLeccion(leccion: Leccion): void {
+  cargarCursoDesdeBackend(id: number) {
+    this.loading.set(true);
+    this.error.set('');
+    this.curso.set(null);
+
+    this.http.get<CursoDetalle>(`${this.apiUrl}/${id}`).subscribe({
+      next: (data) => {
+
+
+        //  Simulación de lecciones si no existen ---
+        if (!data.lecciones || data.lecciones.length === 0) {
+          data.lecciones = [
+            { id: 1, titulo: 'Bienvenida al curso', duracion: '5 min', completada: false, contenido: 'Introducción a ' + data.titulo },
+            { id: 2, titulo: 'Conceptos Fundamentales', duracion: '15 min', completada: false, contenido: 'Teoría básica necesaria...' },
+            { id: 3, titulo: 'Práctica Final', duracion: '30 min', completada: false, contenido: 'Evaluación de conocimientos...' }
+          ];
+          data.duracionTotal = '50 min';
+          data.instructor = 'Instructor Demo';
+          data.progreso = 0;
+        }
+        // ----------------------------------------------------
+
+        this.curso.set(data);
+        this.progreso.set(data.progreso || 0);
+
+        if (data.lecciones && data.lecciones.length > 0) {
+          this.seleccionarLeccion(data.lecciones[0]);
+        }
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error backend:', err);
+        this.error.set(`El curso con ID ${id} no existe en la base de datos.`);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  seleccionarLeccion(leccion: Leccion) {
     this.leccionActual.set(leccion);
   }
 
-  marcarComoCompletada(leccion: Leccion): void {
-    const cursoActual = this.curso();
-    if (!cursoActual) return;
-
+  marcarComoCompletada(leccion: Leccion) {
     leccion.completada = !leccion.completada;
-    
-    const leccionesCompletadas = cursoActual.lecciones.filter(l => l.completada).length;
-    const progresoCalculado = Math.round((leccionesCompletadas / cursoActual.lecciones.length) * 100);
-    this.progreso.set(progresoCalculado);
-    cursoActual.progreso = progresoCalculado;
+    this.actualizarProgreso();
   }
 
-  siguienteLeccion(): void {
-    const cursoActual = this.curso();
-    const leccionAct = this.leccionActual();
-    
-    if (!cursoActual || !leccionAct) return;
-
-    const indiceActual = cursoActual.lecciones.findIndex(l => l.id === leccionAct.id);
-    if (indiceActual < cursoActual.lecciones.length - 1) {
-      this.seleccionarLeccion(cursoActual.lecciones[indiceActual + 1]);
+  actualizarProgreso() {
+    const curso = this.curso();
+    if (curso && curso.lecciones) {
+      const completadas = curso.lecciones.filter(l => l.completada).length;
+      const total = curso.lecciones.length;
+      const nuevoProgreso = total === 0 ? 0 : Math.round((completadas / total) * 100);
+      this.progreso.set(nuevoProgreso);
     }
   }
 
-  leccionAnterior(): void {
-    const cursoActual = this.curso();
-    const leccionAct = this.leccionActual();
-    
-    if (!cursoActual || !leccionAct) return;
-
-    const indiceActual = cursoActual.lecciones.findIndex(l => l.id === leccionAct.id);
-    if (indiceActual > 0) {
-      this.seleccionarLeccion(cursoActual.lecciones[indiceActual - 1]);
+  siguienteLeccion() {
+    const curso = this.curso();
+    const actual = this.leccionActual();
+    if (curso && actual) {
+      const index = curso.lecciones.findIndex(l => l.id === actual.id);
+      if (index >= 0 && index < curso.lecciones.length - 1) {
+        this.seleccionarLeccion(curso.lecciones[index + 1]);
+      }
     }
   }
 
-  volverAMisCursos(): void {
+  leccionAnterior() {
+    const curso = this.curso();
+    const actual = this.leccionActual();
+    if (curso && actual) {
+      const index = curso.lecciones.findIndex(l => l.id === actual.id);
+      if (index > 0) {
+        this.seleccionarLeccion(curso.lecciones[index - 1]);
+      }
+    }
+  }
+
+  siguienteCurso() {
+    const cursoActual = this.curso();
+    if (cursoActual) {
+      this.router.navigate(['/curso-detalle', cursoActual.id + 1]);
+    }
+  }
+
+  generarCertificado() {
+    alert(`¡Felicidades! Generando certificado para: ${this.curso()?.titulo}`);
+  }
+
+  volverAMisCursos() {
     this.router.navigate(['/mis-cursos']);
   }
 }

@@ -9,13 +9,11 @@ import { MisCursosComponent } from './components/mis-cursos/mis-cursos.component
 import { CursoDetalleComponent } from './components/curso-detalle/curso-detalle.component';
 import { ListaUsuariosComponent } from './components/usuarios/lista-usuarios/lista-usuarios.component';
 import { EditarUsuarioComponent } from './components/usuarios/editar-usuario/editar-usuario.component';
+import { AprobacionCursosComponent } from './components/aprobacion-cursos/aprobacion-cursos.component';
 
-//Agregamos esta dos import
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 
-
-//Modificaciomos para agregar las rutas de acuerod a los roles
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -43,6 +41,12 @@ export const routes: Routes = [
   {
     path: 'usuarios/editar/:id',
     component: EditarUsuarioComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN'] }
+  },
+  {
+    path: 'cursos/aprobacion',
+    component: AprobacionCursosComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ROLE_ADMIN'] }
   },

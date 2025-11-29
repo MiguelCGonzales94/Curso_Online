@@ -3,13 +3,26 @@
     <div class="curso-header">
       <button class="btn-back" (click)="volverAMisCursos()">← Volver a Mis Cursos</button>
       <h1>{{ curso()!.titulo }}</h1>
-      <p class="instructor"> {{ curso()!.instructor }}</p>
+      <p class="instructor">Instructor: {{ curso()!.instructor }}</p>
+
       <div class="progreso-container">
         <div class="progreso-barra">
           <div class="progreso-fill" [style.width.%]="progreso()"></div>
         </div>
         <span>{{ progreso() }}% completado</span>
-      </div>
+
+        @if (progreso() === 100) {
+          <div class="certificado-area">
+            <button class="btn-certificado" (click)="generarCertificado()">
+              🏆 Descargar Certificado
+            </button>
+
+            <button class="btn-siguiente-curso" (click)="siguienteCurso()">
+              Siguiente Curso →
+            </button>
+          </div>
+        }
+        </div>
     </div>
 
     <div class="curso-contenido">
@@ -62,7 +75,7 @@
   } @else {
     <div class="no-encontrado">
       <h2>Curso no encontrado</h2>
-      <button routerLink="/mis-cursos">Volver</button>
+      <button class="btn-back" (click)="volverAMisCursos()">Volver a mis cursos</button>
     </div>
   }
 </div>

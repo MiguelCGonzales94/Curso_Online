@@ -1,0 +1,111 @@
+<div class="aprobacion-container">
+  <div class="header">
+    <h1>Aprobación de Cursos</h1>
+    <div class="header-actions">
+      <button class="btn-secondary" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  @if (estadisticas()) {
+    <div class="estadisticas-grid">
+      <div class="stat-card pendientes">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <h3>{{ estadisticas()!.pendientes }}</h3>
+          <p>Cursos Pendientes</p>
+        </div>
+      </div>
+
+      <div class="stat-card aprobados">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <h3>{{ estadisticas()!.aprobados }}</h3>
+          <p>Cursos Aprobados</p>
+        </div>
+      </div>
+
+      <div class="stat-card rechazados">
+        <div class="stat-icon">❌</div>
+        <div class="stat-info">
+          <h3>{{ estadisticas()!.rechazados }}</h3>
+          <p>Cursos Rechazados</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading">
+      <p>Cargando cursos pendientes...</p>
+    </div>
+  } @else {
+    @if (cursosPendientes().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h2>No hay cursos pendientes de aprobación</h2>
+        <p>Todos los cursos han sido revisados</p>
+        <button class="btn-primary" routerLink="/dashboard">
+          Volver al Dashboard
+        </button>
+      </div>
+    } @else {
+      <div class="cursos-grid">
+        @for (curso of cursosPendientes(); track curso.id) {
+          <div class="curso-card">
+            <div class="curso-header">
+              <h3>{{ curso.titulo }}</h3>
+              <span class="estado-badge estado-pendiente">
+                ⏳ Pendiente
+              </span>
+            </div>
+
+            <p class="curso-descripcion">{{ curso.descripcion }}</p>
+
+            <div class="curso-footer">
+              <button
+                class="btn-detalle"
+                (click)="verDetalles(curso)"
+                [disabled]="estaProcesando(curso.id!)">
+                👁️ Ver Detalles
+              </button>
+
+              <div class="acciones-aprobacion">
+                @if (estaProcesando(curso.id!)) {
+                  <button class="btn-procesando" disabled>
+                    Procesando...
+                  </button>
+                } @else {
+                  <button
+                    class="btn-aprobar"
+                    (click)="aprobarCurso(curso.id!)">
+                    ✅ Aprobar
+                  </button>
+                  <button
+                    class="btn-rechazar"
+                    (click)="rechazarCurso(curso.id!)">
+                    ❌ Rechazar
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

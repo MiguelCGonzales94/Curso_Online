@@ -32,6 +32,13 @@ export class DashboardComponent implements OnInit {
       roles: ['ROLE_ADMIN']
     },
     {
+      title: 'Aprobar Cursos',
+      description: 'Revisar y aprobar cursos pendientes',
+      icon: 'fas fa-check-circle',
+      route: '/cursos/aprobacion',
+      roles: ['ROLE_ADMIN']
+    },
+    {
       title: 'Gestión de Cursos',
       description: 'Crear, editar y administrar cursos',
       icon: 'fas fa-book',

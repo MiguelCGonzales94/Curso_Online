@@ -28,7 +28,7 @@ export class CursosListComponent implements OnInit {
   cargarCursos(): void {
     this.isLoading.set(true);
     this.errorMessage.set('');
-    
+
     this.cursoService.listarCursos().subscribe({
       next: (data) => {
         this.cursos.set(data);
@@ -56,20 +56,18 @@ export class CursosListComponent implements OnInit {
 
     this.errorMessage.set('');
     this.successMessage.set('');
-    
+
     console.log('Eliminando curso ID:', id);
 
-    // Llamar al backend para eliminar el curso
     this.cursoService.eliminarCurso(id).subscribe({
       next: () => {
         this.successMessage.set('Curso eliminado exitosamente');
-        
-        // Remover el curso de la lista local
+
         const cursosActuales = this.cursos();
         this.cursos.set(cursosActuales.filter(c => c.id !== id));
-        
+
         console.log('Curso eliminado exitosamente');
-        
+
         setTimeout(() => {
           this.successMessage.set('');
         }, 3000);
@@ -78,8 +76,7 @@ export class CursosListComponent implements OnInit {
         console.error('Error al eliminar curso:', error);
         console.error('Error status:', error.status);
         console.error('Error body:', error.error);
-        
-        // Manejar diferentes tipos de errores
+
         if (error.status === 404) {
           this.errorMessage.set('El curso no existe');
         } else if (error.status === 500) {
@@ -91,8 +88,7 @@ export class CursosListComponent implements OnInit {
         } else {
           this.errorMessage.set('Error al eliminar el curso. Por favor, intenta de nuevo.');
         }
-        
-        // Limpiar mensaje después de 5 segundos
+
         setTimeout(() => {
           this.errorMessage.set('');
         }, 5000);
@@ -106,20 +102,24 @@ export class CursosListComponent implements OnInit {
 
   getEstadoClass(estado: EstadoCurso): string {
     const classes: { [key in EstadoCurso]: string } = {
+      [EstadoCurso.PENDIENTE]: 'estado-pendiente',
       [EstadoCurso.ACTIVO]: 'estado-activo',
       [EstadoCurso.INACTIVO]: 'estado-inactivo',
       [EstadoCurso.COMPLETADO]: 'estado-completado',
-      [EstadoCurso.CANCELADO]: 'estado-cancelado'
+      [EstadoCurso.CANCELADO]: 'estado-cancelado',
+      [EstadoCurso.RECHAZADO]: 'estado-rechazado'
     };
     return classes[estado];
   }
 
   getEstadoLabel(estado: EstadoCurso): string {
     const labels: { [key in EstadoCurso]: string } = {
+      [EstadoCurso.PENDIENTE]: 'Pendiente',
       [EstadoCurso.ACTIVO]: 'Activo',
       [EstadoCurso.INACTIVO]: 'Inactivo',
       [EstadoCurso.COMPLETADO]: 'Completado',
-      [EstadoCurso.CANCELADO]: 'Cancelado'
+      [EstadoCurso.CANCELADO]: 'Cancelado',
+      [EstadoCurso.RECHAZADO]: 'Rechazado'
     };
     return labels[estado];
   }

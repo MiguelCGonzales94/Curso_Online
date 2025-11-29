@@ -1,10 +1,10 @@
 package com.dev.CursoOnline.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "cursos")
-
 public class Curso {
 
     @Id
@@ -15,22 +15,23 @@ public class Curso {
     private String descripcion;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private EstadoCurso estado;
 
-    //constructores
+    // Constructores
     public Curso() {
-
+        // Establecer estado por defecto
+        this.estado = EstadoCurso.PENDIENTE;
     }
 
     public Curso(Long id, String titulo, String descripcion, EstadoCurso estado) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
-        this.estado = estado;
+        this.estado = estado != null ? estado : EstadoCurso.PENDIENTE;
     }
 
-    //getters y setters
-
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -60,6 +61,16 @@ public class Curso {
     }
 
     public void setEstado(EstadoCurso estado) {
-        this.estado = estado;
+        this.estado = estado != null ? estado : EstadoCurso.PENDIENTE;
+    }
+
+    @Override
+    public String toString() {
+        return "Curso{" +
+                "id=" + id +
+                ", titulo='" + titulo + '\'' +
+                ", descripcion='" + descripcion + '\'' +
+                ", estado=" + estado +
+                '}';
     }
 }

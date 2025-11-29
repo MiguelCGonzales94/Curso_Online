@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-//import { AuthService } from './auth.service';
-
 export enum EstadoCurso {
+  PENDIENTE = 'PENDIENTE',
   ACTIVO = 'ACTIVO',
   INACTIVO = 'INACTIVO',
   COMPLETADO = 'COMPLETADO',
-  CANCELADO = 'CANCELADO'
+  CANCELADO = 'CANCELADO',
+  RECHAZADO = 'RECHAZADO'
 }
 
 export interface Curso {
@@ -18,25 +18,20 @@ export interface Curso {
   estado: EstadoCurso;
 }
 
+export interface EstadisticasCursos {
+  pendientes: number;
+  aprobados: number;
+  rechazados: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class CursoService {
   private apiUrl = 'http://localhost:8080/cursos';
+  private aprobacionUrl = 'http://localhost:8080/cursos/aprobacion';
 
-  constructor(
-    private http: HttpClient,
-    //private authService: AuthService
-  ) {}
-
-  //*private getHeaders(): HttpHeaders {
-  //  const token = this.authService.getToken();
-  //  return new HttpHeaders({
-  //    'Content-Type': 'application/json',
-  //    'Authorization': `Bearer ${token}`
-  //  });
-  //}
-
+  constructor(private http: HttpClient) {}
 
   crearCurso(curso: Curso): Observable<Curso> {
     return this.http.post<Curso>(this.apiUrl, curso);
@@ -58,18 +53,28 @@ export class CursoService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  // Nuevos métodos para aprobación
+  listarCursosPendientes(): Observable<Curso[]> {
+    return this.http.get<Curso[]>(`${this.aprobacionUrl}/pendientes`);
+  }
+
+  aprobarCurso(id: number): Observable<any> {
+    return this.http.put(`${this.aprobacionUrl}/${id}/aprobar`, {});
+  }
+
+  rechazarCurso(id: number): Observable<any> {
+    return this.http.put(`${this.aprobacionUrl}/${id}/rechazar`, {});
+  }
+
+  obtenerEstadisticas(): Observable<EstadisticasCursos> {
+    return this.http.get<EstadisticasCursos>(`${this.aprobacionUrl}/estadisticas`);
+  }
+
+  // Métodos existentes para inscripción
   inscribirCurso(cursoId: number, usuarioId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/cursoregistros`, {
       cursoId,
       usuarioId
     });
-  }
-
-  inscribirCursoPorUrl(cursoId: number, usuarioId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/cursoregistros/${cursoId}/${usuarioId}`, {});
-  }
-
-  inscribirCursoQueryParams(cursoId: number, usuarioId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/cursoregistros?cursoId=${cursoId}&usuarioId=${usuarioId}`, {});
   }
 }

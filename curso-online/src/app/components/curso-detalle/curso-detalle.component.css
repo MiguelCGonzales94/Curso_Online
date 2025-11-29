@@ -23,3 +23,58 @@
 .navegacion button:disabled { opacity: 0.5; cursor: not-allowed; }
 .no-encontrado { text-align: center; padding: 4rem 2rem; }
 @media (max-width: 768px) { .curso-contenido { grid-template-columns: 1fr; } }
+
+.barra-fondo {
+  width: 100%;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.barra-relleno {
+  height: 100%;
+  background-color: #4caf50; /* Verde éxito */
+  transition: width 0.5s ease-in-out;
+}
+
+/* Estilos del Botón Certificado */
+.certificado-area {
+  margin-top: 20px;
+  animation: fadeIn 1s;
+}
+
+.btn-certificado {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(45deg, #FFD700, #FFC107); /* Dorado */
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+  margin-bottom: 10px;
+  transition: transform 0.2s;
+}
+
+.btn-certificado:hover {
+  transform: scale(1.05);
+}
+
+.btn-siguiente-curso {
+  width: 100%;
+  padding: 10px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

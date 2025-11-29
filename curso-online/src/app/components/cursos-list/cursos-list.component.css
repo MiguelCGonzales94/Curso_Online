@@ -144,6 +144,11 @@
   white-space: nowrap;
 }
 
+.estado-pendiente {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
 .estado-activo {
   background-color: #d4edda;
   color: #155724;
@@ -162,6 +167,11 @@
 .estado-cancelado {
   background-color: #f8d7da;
   color: #856404;
+}
+
+.estado-rechazado {
+  background-color: #f5c6cb;
+  color: #721c24;
 }
 
 .curso-descripcion {
